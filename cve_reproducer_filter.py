@@ -400,9 +400,18 @@ class CVEReproducibilityFilter:
                 'poc_url': result.poc_url,
                 'exploit_available': result.exploit_available,
                 'reasons': result.reasons,
+                'date_published': full_info.get('date_published', ''),
                 'file_path': f"{result.cve_id}.md"
             })
         
+        # 创建按发布时间排序的CVE列表
+        cves_by_date = sorted(
+            summary['cves'],
+            key=lambda x: x.get('date_published', ''),
+            reverse=True
+        )
+        summary['cves_by_date'] = cves_by_date
+
         # 保存汇总JSON
         summary_file = os.path.join(output_dir, 'summary.json')
         with open(summary_file, 'w', encoding='utf-8') as f:
@@ -561,29 +570,7 @@ class CVEReproducibilityFilter:
             md += "## Solutions\n\n"
             for solution in solutions:
                 md += f"{solution.get('value', '')}\n\n"
-        
-        # 复现原因
-        md += "## Reproducibility Reasons\n\n"
-        for reason in result.reasons:
-            md += f"- {reason}\n"
-        md += "\n"
-        
-        # 复现提示
-        md += "## Reproduction Hints\n\n"
-        md += "To reproduce this vulnerability, you will need:\n\n"
-        md += f"1. **Product**: {result.vendor} {result.product} version {result.version}\n"
-        md += f"2. **Environment**: Check the affected platforms and modules above\n"
-        md += f"3. **POC**: Review the POC/Exploit references if available\n"
-        md += f"4. **Vulnerability Type**: {result.cwe_id} - understand the attack vector\n\n"
-        
-        md += "### Next Steps for LiveCVEBench\n\n"
-        md += "1. Create Dockerfile with vulnerable version\n"
-        md += "2. Setup docker-compose.yaml with necessary services\n"
-        md += "3. Write test_func.py for functionality tests\n"
-        md += "4. Write test_vuln.py to verify vulnerability\n"
-        md += "5. Create solution.sh with patch/fix\n"
-        md += "6. Generate task.yaml with bug report format\n\n"
-        
+
         return md
     
 
